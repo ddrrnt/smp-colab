@@ -3,161 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedded Mindmap</title>
+    <title>Horizontal Expanding Mindmap</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
             margin: 0;
             padding: 20px;
             background-color: #f4f4f4;
         }
-        #mindmap-container {
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        .mindmap-node {
-            margin-left: 20px;
-            padding: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 5px;
-        }
-        .mindmap-node-content {
+        #mindmap-container {
             display: flex;
-            align-items: center;
+            overflow-x: auto;
+            padding: 20px 0;
+            min-height: 500px;
         }
-        .mindmap-toggle {
+        .mindmap-column {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            margin-right: 10px;
+            flex-grow: 1;
+        }
+        .mindmap-node {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .mindmap-node:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .mindmap-node.active {
+            background-color: #FFDAB9;
+        }
+        .mindmap-node h3 {
+            margin: 0;
+            font-size: 14px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .color-options, .embed-section {
+            margin-bottom: 10px;
+        }
+        .color-options button, .embed-section button {
             margin-right: 5px;
-            transition: transform 0.3s;
         }
-        .mindmap-toggle.expanded {
-            transform: rotate(90deg);
-        }
-        .mindmap-children {
+        #embed-code {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
             display: none;
-            margin-left: 20px;
-        }
-        .mindmap-children.expanded {
-            display: block;
         }
     </style>
 </head>
 <body>
-    <div id="mindmap-container"></div>
+    <div class="container">
+        <h1>Horizontal Expanding Mindmap</h1>
+        <textarea id="input-area" placeholder="Paste your OPML or nested markdown list here..."></textarea>
+        <button id="generate-btn">Generate Mindmap</button>
+        <div class="color-options">
+            <button data-color="black">Black</button>
+            <button data-color="yellow">Yellow</button>
+            <button data-color="blue">Blue</button>
+            <button data-color="red">Red</button>
+            <button data-color="green">Green</button>
+            <button data-color="multi">Multi</button>
+        </div>
+        <div class="embed-section">
+            <button id="embed-btn">Get Embed Code</button>
+            <textarea id="embed-code" readonly></textarea>
+        </div>
+        <div id="mindmap-container"></div>
+    </div>
     <script>
-    // Colors for different depths
-    const colors = ['#FFDAB9', '#FFB6C1', '#98FB98', '#87CEFA', '#DDA0DD'];
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputArea = document.getElementById('input-area');
+            const generateBtn = document.getElementById('generate-btn');
+            const mindmapContainer = document.getElementById('mindmap-container');
+            const colorOptions = document.querySelectorAll('.color-options button');
+            const embedBtn = document.getElementById('embed-btn');
+            const embedCode = document.getElementById('embed-code');
+            let currentColorScheme = 'multi';
 
-    function parseOPML(opmlString) {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(opmlString, "text/xml");
-        
-        function parseOutline(outlineElement, depth = 0) {
-            const result = {
-                text: outlineElement.getAttribute('text'),
-                children: [],
-                depth: depth
+            const colorSchemes = {
+                black: ['#000000', '#333333', '#666666', '#999999', '#CCCCCC'],
+                yellow: ['#FFDD00', '#FFCC00', '#FFBB00', '#FFAA00', '#FF9900'],
+                blue: ['#00008B', '#1E90FF', '#87CEFA', '#ADD8E6', '#B0E0E6'],
+                red: ['#8B0000', '#FF4500', '#FF6347', '#FFA07A', '#FFB6C1'],
+                green: ['#006400', '#008000', '#32CD32', '#7CFC00', '#ADFF2F'],
+                multi: ['#FF6347', '#FFA07A', '#FFD700', '#ADFF2F', '#1E90FF']
             };
-            
-            const childOutlines = outlineElement.children;
-            for (let i = 0; i < childOutlines.length; i++) {
-                if (childOutlines[i].tagName === 'outline') {
-                    result.children.push(parseOutline(childOutlines[i], depth + 1));
-                }
-            }
-            
-            return result;
-        }
-        
-        const rootOutline = xmlDoc.getElementsByTagName('outline')[0];
-        return parseOutline(rootOutline);
-    }
 
-    function parseMarkdown(markdownString) {
-        const lines = markdownString.split('\n');
-        const root = { text: 'Root', children: [], depth: -1 };
-        const stack = [root];
-
-        lines.forEach(line => {
-            const trimmedLine = line.trim();
-            if (trimmedLine) {
-                const depth = line.search(/\S|$/) / 2;
-                const text = trimmedLine.replace(/^[*-]\s/, '');
-                const node = { text, children: [], depth };
-
-                while (stack.length > depth + 1) {
-                    stack.pop();
-                }
-
-                stack[stack.length - 1].children.push(node);
-                stack.push(node);
-            }
-        });
-
-        return root.children[0];
-    }
-
-    function renderMindmap(container, data) {
-        container.innerHTML = '';
-        container.appendChild(createNodeElement(data));
-    }
-
-    function createNodeElement(node) {
-        const nodeElement = document.createElement('div');
-        nodeElement.className = 'mindmap-node';
-        nodeElement.style.backgroundColor = colors[Math.min(node.depth, colors.length - 1)];
-
-        const nodeContent = document.createElement('div');
-        nodeContent.className = 'mindmap-node-content';
-
-        if (node.children.length > 0) {
-            const toggle = document.createElement('span');
-            toggle.className = 'mindmap-toggle';
-            toggle.textContent = '▶';
-            nodeContent.appendChild(toggle);
-        }
-
-        const text = document.createElement('span');
-        text.textContent = node.text;
-        nodeContent.appendChild(text);
-
-        nodeElement.appendChild(nodeContent);
-
-        if (node.children.length > 0) {
-            const childrenContainer = document.createElement('div');
-            childrenContainer.className = 'mindmap-children';
-            node.children.forEach(child => {
-                childrenContainer.appendChild(createNodeElement(child));
+            colorOptions.forEach(button => {
+                button.addEventListener('click', () => {
+                    currentColorScheme = button.dataset.color;
+                    applyColors();
+                });
             });
-            nodeElement.appendChild(childrenContainer);
 
-            nodeElement.addEventListener('click', (e) => {
-                e.stopPropagation();
-                childrenContainer.classList.toggle('expanded');
-                nodeContent.querySelector('.mindmap-toggle').classList.toggle('expanded');
+            embedBtn.addEventListener('click', () => {
+                const input = inputArea.value.trim();
+                const colorScheme = currentColorScheme;
+                const iframeCode = `<iframe src="data:text/html;charset=utf-8,${encodeURIComponent(createEmbedHTML(input, colorScheme))}" width="600" height="400" style="border:none;"></iframe>`;
+                embedCode.value = iframeCode;
+                embedCode.style.display = 'block';
             });
-        }
 
-        return nodeElement;
-    }
+            function createEmbedHTML(input, colorScheme) {
+                return `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            background-color: #f4f4f4;
+                        }
+                        .mindmap-container {
+                            display: flex;
+                            overflow-x: auto;
+                            padding: 20px 0;
+                            min-height: 500px;
+                        }
+                        .mindmap-column {
+                            display: flex;
+                            flex-direction: column;
+                            min-width: 200px;
+                            margin-right: 10px;
+                            flex-grow: 1;
+                        }
+                        .mindmap-node {
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                            padding: 10px;
+                            margin-bottom: 10px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            flex-grow: 1;
+                            display: flex;
+                            flex-direction: column;
+                        }
+                        .mindmap-node:hover {
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                        }
+                        .mindmap-node.active {
+                            background-color: #FFDAB9;
+                        }
+                        .mindmap-node h3 {
+                            margin: 0;
+                            font-size: 14px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="mindmap-container" id="mindmap-container"></div>
+                    <script>
+                        const colorSchemes = {
+                            black: ['#000000', '#333333', '#666666', '#999999', '#CCCCCC'],
+                            yellow: ['#FFDD00', '#FFCC00', '#FFBB00', '#FFAA00', '#FF9900'],
+                            blue: ['#00008B', '#1E90FF', '#87CEFA', '#ADD8E6', '#B0E0E6'],
+                            red: ['#8B0000', '#FF4500', '#FF6347', '#FFA07A', '#FFB6C1'],
+                            green: ['#006400', '#008000', '#32CD32', '#7CFC00', '#ADFF2F'],
+                            multi: ['#FF6347', '#FFA07A', '#FFD700', '#ADFF2F', '#1E90FF']
+                        };
+                        const colorScheme = "${colorScheme}";
 
-    // Main execution
-    (function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const input = decodeURIComponent(urlParams.get('data'));
-        let data;
+                        function parseOPML(opmlString) {
+                            const parser = new DOMParser();
+                            const xmlDoc = parser.parseFromString(opmlString, "text/xml");
+                            function parseOutline(outlineElement) {
+                                const result = {
+                                    title: outlineElement.getAttribute('text'),
+                                    children: []
+                                };
+                                const childOutlines = outlineElement.children;
+                                for (let i = 0; i < childOutlines.length; i++) {
+                                    if (childOutlines[i].tagName === 'outline') {
+                                        result.children.push(parseOutline(childOutlines[i]));
+                                    }
+                                }
+                                return result;
+                            }
+                            const rootOutline = xmlDoc.getElementsByTagName('outline')[0];
+                            return parseOutline(rootOutline);
+                        }
 
-        if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-            data = parseOPML(input);
-        } else {
-            data = parseMarkdown(input);
-        }
-
-        renderMindmap(document.getElementById('mindmap-container'), data);
-    })();
-    </script>
-</body>
-</html>
+                        function parseMarkdown(markdownString) {
+                            const lines = markdownString.split('\\n');
+                            const root = { title: 'Root', children: [] };
+                            const stack = [root];
+                            lines.forEach(line => {
+                                const trimmedLine = line.trim();
+                                if (
