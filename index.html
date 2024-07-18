@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Grid Mindmap Generator</title>
+    <title>Horizontal Expanding Mindmap</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
             margin: 0;
             padding: 20px;
             background-color: #f4f4f4;
@@ -20,13 +19,39 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        h1 {
-            text-align: center;
-            color: #333;
+        #mindmap-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .mindmap-column {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            margin-right: 10px;
+        }
+        .mindmap-node {
+            background-color: #FFB6C1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .mindmap-node:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .mindmap-node.active {
+            background-color: #FFDAB9;
+        }
+        .mindmap-node h3 {
+            margin: 0;
+            font-size: 14px;
         }
         textarea {
             width: 100%;
-            height: 200px;
+            height: 150px;
             margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #ddd;
@@ -45,86 +70,36 @@
         button:hover {
             background-color: #45a049;
         }
-        #mindmap-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 4px;
-        }
-        .mindmap-node {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .mindmap-node:hover {
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .mindmap-node h3 {
-            margin: 0 0 10px 0;
-        }
-        .mindmap-children {
-            display: none;
-            margin-left: 20px;
-        }
-        .expanded > .mindmap-children {
-            display: block;
-        }
-        .depth-0 { background-color: #FFB6C1; }
-        .depth-1 { background-color: #FFDAB9; }
-        .depth-2 { background-color: #E6E6FA; }
-        .depth-3 { background-color: #98FB98; }
-        .depth-4 { background-color: #87CEFA; }
-        #embed-code {
-            width: 100%;
-            height: 100px;
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Interactive Grid Mindmap Generator</h1>
+        <h1>Horizontal Expanding Mindmap</h1>
         <textarea id="input-area" placeholder="Paste your OPML or nested markdown list here..."></textarea>
         <button id="generate-btn">Generate Mindmap</button>
-        <button id="embed-btn">Generate Embed URL</button>
         <div id="mindmap-container"></div>
-        <textarea id="embed-code" readonly style="display: none;"></textarea>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const inputArea = document.getElementById('input-area');
         const generateBtn = document.getElementById('generate-btn');
-        const embedBtn = document.getElementById('embed-btn');
         const mindmapContainer = document.getElementById('mindmap-container');
-        const embedCodeArea = document.getElementById('embed-code');
 
         function parseOPML(opmlString) {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(opmlString, "text/xml");
             
-            function parseOutline(outlineElement, depth = 0) {
+            function parseOutline(outlineElement) {
                 const result = {
                     title: outlineElement.getAttribute('text'),
-                    children: [],
-                    depth: depth
+                    children: []
                 };
                 
                 const childOutlines = outlineElement.children;
                 for (let i = 0; i < childOutlines.length; i++) {
                     if (childOutlines[i].tagName === 'outline') {
-                        result.children.push(parseOutline(childOutlines[i], depth + 1));
+                        result.children.push(parseOutline(childOutlines[i]));
                     }
                 }
                 
@@ -137,7 +112,7 @@
 
         function parseMarkdown(markdownString) {
             const lines = markdownString.split('\n');
-            const root = { title: 'Root', children: [], depth: -1 };
+            const root = { title: 'Root', children: [] };
             const stack = [root];
 
             lines.forEach(line => {
@@ -145,7 +120,7 @@
                 if (trimmedLine) {
                     const depth = line.search(/\S|$/) / 2;
                     const title = trimmedLine.replace(/^[*-]\s/, '');
-                    const node = { title, children: [], depth };
+                    const node = { title, children: [] };
 
                     while (stack.length > depth + 1) {
                         stack.pop();
@@ -159,30 +134,54 @@
             return root.children[0];
         }
 
-        function renderMindmap(container, data) {
-            container.innerHTML = '';
-            container.appendChild(createMindmapNode(data));
+        function renderMindmap(data) {
+            mindmapContainer.innerHTML = '';
+            renderColumn(data, mindmapContainer);
         }
 
-        function createMindmapNode(node, depth = 0) {
-            const nodeElement = document.createElement('div');
-            nodeElement.className = `mindmap-node depth-${depth}`;
-            nodeElement.innerHTML = `<h3>${node.title}</h3>`;
-
+        function renderColumn(node, container) {
+            const column = document.createElement('div');
+            column.className = 'mindmap-column';
+            
+            const nodeElement = createNodeElement(node);
+            column.appendChild(nodeElement);
+            
             if (node.children && node.children.length > 0) {
-                const childrenContainer = document.createElement('div');
-                childrenContainer.className = 'mindmap-children';
+                const childColumn = document.createElement('div');
+                childColumn.className = 'mindmap-column';
+                childColumn.style.display = 'none';
+                
                 node.children.forEach(child => {
-                    childrenContainer.appendChild(createMindmapNode(child, depth + 1));
+                    const childNode = createNodeElement(child);
+                    childColumn.appendChild(childNode);
                 });
-                nodeElement.appendChild(childrenContainer);
-
-                nodeElement.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    this.classList.toggle('expanded');
+                
+                nodeElement.addEventListener('click', function() {
+                    const activeNodes = container.querySelectorAll('.mindmap-node.active');
+                    activeNodes.forEach(node => node.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const existingColumns = container.querySelectorAll('.mindmap-column');
+                    for (let i = 1; i < existingColumns.length; i++) {
+                        container.removeChild(existingColumns[i]);
+                    }
+                    
+                    childColumn.style.display = 'flex';
+                    container.appendChild(childColumn);
+                    
+                    if (node.children[0].children && node.children[0].children.length > 0) {
+                        renderColumn(node.children[0], childColumn);
+                    }
                 });
             }
+            
+            container.appendChild(column);
+        }
 
+        function createNodeElement(node) {
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'mindmap-node';
+            nodeElement.innerHTML = `<h3>${node.title}</h3>`;
             return nodeElement;
         }
 
@@ -196,19 +195,10 @@
                 data = parseMarkdown(input);
             }
 
-            renderMindmap(mindmapContainer, data);
-        }
-
-        function generateEmbedUrl() {
-            const input = inputArea.value.trim();
-            const encodedInput = encodeURIComponent(input);
-            const embedUrl = `https://ddrrnt.github.io/smp-colab/embed.html?data=${encodedInput}`;
-            embedCodeArea.value = embedUrl;
-            embedCodeArea.style.display = 'block';
+            renderMindmap(data);
         }
 
         generateBtn.addEventListener('click', generateMindmap);
-        embedBtn.addEventListener('click', generateEmbedUrl);
     });
     </script>
 </body>
