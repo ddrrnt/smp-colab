@@ -113,7 +113,7 @@
             const generateBtn = document.getElementById('generate-btn');
             const mindmapContainer = document.getElementById('mindmap-container');
             const colorOptions = document.querySelectorAll('.color-options button');
-                        const embedBtn = document.getElementById('embed-btn');
+            const embedBtn = document.getElementById('embed-btn');
             const embedCode = document.getElementById('embed-code');
             let currentColorScheme = 'multi';
 
@@ -237,7 +237,7 @@
                 const input = inputArea.value.trim();
                 let data;
                 if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-                    data = parseOPML(input);
+                                        data = parseOPML(input);
                 } else {
                     data = parseMarkdown(input);
                 }
