@@ -1,3 +1,14 @@
+<script>
+console.log('Debug: Script is running');
+console.log('Debug: Input area:', document.getElementById('input-area'));
+console.log('Debug: Generate button:', document.getElementById('generate-btn'));
+console.log('Debug: Mindmap container:', document.getElementById('mindmap-container'));
+
+document.getElementById('generate-btn').addEventListener('click', function() {
+    console.log('Debug: Generate button clicked');
+    console.log('Debug: Input value:', document.getElementById('input-area').value);
+});
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
