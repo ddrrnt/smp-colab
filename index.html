@@ -1,21 +1,48 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Debug: DOM fully loaded');
-    console.log('Debug: Input area:', document.getElementById('input-area'));
-    console.log('Debug: Generate button:', document.getElementById('generate-btn'));
-    console.log('Debug: Mindmap container:', document.getElementById('mindmap-container'));
-
+    
+    const inputArea = document.getElementById('input-area');
     const generateBtn = document.getElementById('generate-btn');
+    const mindmapContainer = document.getElementById('mindmap-container');
+    
+    console.log('Debug: Input area:', inputArea);
+    console.log('Debug: Generate button:', generateBtn);
+    console.log('Debug: Mindmap container:', mindmapContainer);
+
     if (generateBtn) {
         generateBtn.addEventListener('click', function() {
             console.log('Debug: Generate button clicked');
-            console.log('Debug: Input value:', document.getElementById('input-area').value);
+            console.log('Debug: Input value:', inputArea.value);
+            
+            try {
+                const input = inputArea.value.trim();
+                let data;
+                if (input.startsWith('<?xml') || input.startsWith('<opml')) {
+                    data = parseOPML(input);
+                } else {
+                    data = parseMarkdown(input);
+                }
+                console.log('Debug: Parsed data:', data);
+                
+                renderMindmap(mindmapContainer, data);
+                console.log('Debug: Mindmap rendered');
+                console.log('Debug: Mindmap container HTML:', mindmapContainer.innerHTML);
+            } catch (error) {
+                console.error('Debug: Error in mindmap generation:', error);
+            }
         });
     } else {
         console.log('Debug: Generate button not found');
     }
 
-    console.log('Debug: Full HTML:', document.body.innerHTML);
+    // Log applied styles
+    const styles = window.getComputedStyle(document.body);
+    console.log('Debug: Applied styles:', {
+        backgroundColor: styles.backgroundColor,
+        color: styles.color,
+        fontFamily: styles.fontFamily
+    });
 });
 </script>
 <!DOCTYPE html>
