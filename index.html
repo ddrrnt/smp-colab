@@ -1,50 +1,3 @@
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Debug: DOM fully loaded');
-    
-    const inputArea = document.getElementById('input-area');
-    const generateBtn = document.getElementById('generate-btn');
-    const mindmapContainer = document.getElementById('mindmap-container');
-    
-    console.log('Debug: Input area:', inputArea);
-    console.log('Debug: Generate button:', generateBtn);
-    console.log('Debug: Mindmap container:', mindmapContainer);
-
-    if (generateBtn) {
-        generateBtn.addEventListener('click', function() {
-            console.log('Debug: Generate button clicked');
-            console.log('Debug: Input value:', inputArea.value);
-            
-            try {
-                const input = inputArea.value.trim();
-                let data;
-                if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-                    data = parseOPML(input);
-                } else {
-                    data = parseMarkdown(input);
-                }
-                console.log('Debug: Parsed data:', data);
-                
-                renderMindmap(mindmapContainer, data);
-                console.log('Debug: Mindmap rendered');
-                console.log('Debug: Mindmap container HTML:', mindmapContainer.innerHTML);
-            } catch (error) {
-                console.error('Debug: Error in mindmap generation:', error);
-            }
-        });
-    } else {
-        console.log('Debug: Generate button not found');
-    }
-
-    // Log applied styles
-    const styles = window.getComputedStyle(document.body);
-    console.log('Debug: Applied styles:', {
-        backgroundColor: styles.backgroundColor,
-        color: styles.color,
-        fontFamily: styles.fontFamily
-    });
-});
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,11 +46,13 @@ document.addEventListener('DOMContentLoaded', function() {
             background-color: #45a049;
         }
         #mindmap-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-top: 20px;
             border: 1px solid #ddd;
             padding: 20px;
             border-radius: 4px;
-            min-height: 400px;
         }
         .mindmap-node {
             background-color: #fff;
@@ -148,36 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 
     <script>
-    (function() {
+    document.addEventListener('DOMContentLoaded', function() {
         const inputArea = document.getElementById('input-area');
         const generateBtn = document.getElementById('generate-btn');
         const embedBtn = document.getElementById('embed-btn');
         const mindmapContainer = document.getElementById('mindmap-container');
         const embedCodeArea = document.getElementById('embed-code');
-
-        generateBtn.addEventListener('click', generateMindmap);
-        embedBtn.addEventListener('click', generateEmbedUrl);
-
-        function generateMindmap() {
-            const input = inputArea.value.trim();
-            let data;
-
-            if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-                data = parseOPML(input);
-            } else {
-                data = parseMarkdown(input);
-            }
-
-            renderMindmap(mindmapContainer, data);
-        }
-
-        function generateEmbedUrl() {
-            const input = inputArea.value.trim();
-            const encodedInput = encodeURIComponent(input);
-            const embedUrl = `https://ddrrnt.github.io/smp-colab/embed.html?data=${encodedInput}`;
-            embedCodeArea.value = embedUrl;
-            embedCodeArea.style.display = 'block';
-        }
 
         function parseOPML(opmlString) {
             const parser = new DOMParser();
@@ -254,7 +185,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
             return nodeElement;
         }
-    })();
+
+        function generateMindmap() {
+            const input = inputArea.value.trim();
+            let data;
+
+            if (input.startsWith('<?xml') || input.startsWith('<opml')) {
+                data = parseOPML(input);
+            } else {
+                data = parseMarkdown(input);
+            }
+
+            renderMindmap(mindmapContainer, data);
+        }
+
+        function generateEmbedUrl() {
+            const input = inputArea.value.trim();
+            const encodedInput = encodeURIComponent(input);
+            const embedUrl = `https://ddrrnt.github.io/smp-colab/embed.html?data=${encodedInput}`;
+            embedCodeArea.value = embedUrl;
+            embedCodeArea.style.display = 'block';
+        }
+
+        generateBtn.addEventListener('click', generateMindmap);
+        embedBtn.addEventListener('click', generateEmbedUrl);
+    });
     </script>
 </body>
 </html>
