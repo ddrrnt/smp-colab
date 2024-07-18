@@ -230,87 +230,86 @@
                             const stack = [root];
                             lines.forEach(line => {
                                 const trimmedLine = line.trim();
-                                if (trimmedLine)
-                                                                if (trimmedLine) {
-                                    const depth = line.search(/\S|$/) / 2;
-                                    const title = trimmedLine.replace(/^[*-]\s/, '');
-                                    const node = { title, children: [] };
-                                    while (stack.length > depth + 1) {
-                                        stack.pop();
-                                    }
-                                    stack[stack.length - 1].children.push(node);
-                                    stack.push(node);
-                                }
-                            });
-                            return root.children[0];
-                        }
-
-                        function renderMindmap(data) {
-                            const mindmapContainer = document.getElementById('mindmap-container');
-                            mindmapContainer.innerHTML = '';
-                            const firstColumn = createColumn();
-                            renderNodes(data, firstColumn, 0);
-                            mindmapContainer.appendChild(firstColumn);
-                            applyColors();
-                        }
-
-                        function createColumn() {
-                            const column = document.createElement('div');
-                            column.className = 'mindmap-column';
-                            return column;
-                        }
-
-                        function renderNodes(node, column, depth) {
-                            const nodeElement = document.createElement('div');
-                            nodeElement.className = 'mindmap-node';
-                            nodeElement.innerHTML = `<h3>${node.title}</h3>`;
-                            column.appendChild(nodeElement);
-                            if (node.children && node.children.length > 0) {
-                                nodeElement.addEventListener('click', function(e) {
-                                    e.stopPropagation();
-                                    this.classList.toggle('active');
-                                    let nextColumn = column.nextElementSibling;
-                                    if (!nextColumn || nextColumn.dataset.depth != depth + 1) {
-                                        nextColumn = createColumn();
-                                        nextColumn.dataset.depth = depth + 1;
-                                        mindmapContainer.insertBefore(nextColumn, column.nextElementSibling);
-                                    }
-                                    nextColumn.innerHTML = '';
-                                    if (this.classList.contains('active')) {
-                                        node.children.forEach(child => renderNodes(child, nextColumn, depth + 1));
-                                    }
-                                    let columnToRemove = nextColumn.nextElementSibling;
-                                    while (columnToRemove) {
-                                        const nextColumnToRemove = columnToRemove.nextElementSibling;
-                                        mindmapContainer.removeChild(columnToRemove);
-                                        columnToRemove = nextColumnToRemove;
+                                if (trimmedLine) {
+                                    const depth =                                        const depth = line.search(/\S|$/) / 2;
+                                        const title = trimmedLine.replace(/^[*-]\s/, '');
+                                        const node = { title, children: [] };
+                                        while (stack.length > depth + 1) {
+                                            stack.pop();
+                                        }
+                                        stack[stack.length - 1].children.push(node);
+                                        stack.push(node);
                                     }
                                 });
+                                return root.children[0];
                             }
-                        }
 
-                        function applyColors() {
-                            const nodes = document.querySelectorAll('.mindmap-node');
-                            nodes.forEach((node) => {
-                                const depth = node.closest('.mindmap-column').dataset.depth || 0;
-                                node.style.backgroundColor = colorSchemes[colorScheme][depth % colorSchemes[colorScheme].length];
-                            });
-                        }
-
-                        function generateMindmap(input) {
-                            let data;
-                            if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-                                data = parseOPML(input);
-                            } else {
-                                data = parseMarkdown(input);
+                            function renderMindmap(data) {
+                                const mindmapContainer = document.getElementById('mindmap-container');
+                                mindmapContainer.innerHTML = '';
+                                const firstColumn = createColumn();
+                                renderNodes(data, firstColumn, 0);
+                                mindmapContainer.appendChild(firstColumn);
+                                applyColors();
                             }
-                            renderMindmap(data);
-                        }
 
-                        generateMindmap(\`${input.replace(/`/g, '\\`')}\`);
-                    </script>
-                </body>
-                </html>`;
+                            function createColumn() {
+                                const column = document.createElement('div');
+                                column.className = 'mindmap-column';
+                                return column;
+                            }
+
+                            function renderNodes(node, column, depth) {
+                                const nodeElement = document.createElement('div');
+                                nodeElement.className = 'mindmap-node';
+                                nodeElement.innerHTML = `<h3>${node.title}</h3>`;
+                                column.appendChild(nodeElement);
+                                if (node.children && node.children.length > 0) {
+                                    nodeElement.addEventListener('click', function(e) {
+                                        e.stopPropagation();
+                                        this.classList.toggle('active');
+                                        let nextColumn = column.nextElementSibling;
+                                        if (!nextColumn || nextColumn.dataset.depth != depth + 1) {
+                                            nextColumn = createColumn();
+                                            nextColumn.dataset.depth = depth + 1;
+                                            mindmapContainer.insertBefore(nextColumn, column.nextElementSibling);
+                                        }
+                                        nextColumn.innerHTML = '';
+                                        if (this.classList.contains('active')) {
+                                            node.children.forEach(child => renderNodes(child, nextColumn, depth + 1));
+                                        }
+                                        let columnToRemove = nextColumn.nextElementSibling;
+                                        while (columnToRemove) {
+                                            const nextColumnToRemove = columnToRemove.nextElementSibling;
+                                            mindmapContainer.removeChild(columnToRemove);
+                                            columnToRemove = nextColumnToRemove;
+                                        }
+                                    });
+                                }
+                            }
+
+                            function applyColors() {
+                                const nodes = document.querySelectorAll('.mindmap-node');
+                                nodes.forEach((node) => {
+                                    const depth = node.closest('.mindmap-column').dataset.depth || 0;
+                                    node.style.backgroundColor = colorSchemes[colorScheme][depth % colorSchemes[colorScheme].length];
+                                });
+                            }
+
+                            function generateMindmap(input) {
+                                let data;
+                                if (input.startsWith('<?xml') || input.startsWith('<opml')) {
+                                    data = parseOPML(input);
+                                } else {
+                                    data = parseMarkdown(input);
+                                }
+                                renderMindmap(data);
+                            }
+
+                            generateMindmap(\`${input.replace(/`/g, '\\`').replace(/\n/g, '\\n')}\`);
+                        </script>
+                    </body>
+                    </html>`;
             }
 
             function parseOPML(opmlString) {
@@ -402,6 +401,17 @@
                     const depth = node.closest('.mindmap-column').dataset.depth || 0;
                     node.style.backgroundColor = colorSchemes[currentColorScheme][depth % colorSchemes[currentColorScheme].length];
                 });
+            }
+
+            function generateMindmap() {
+                const input = inputArea.value.trim();
+                let data;
+                if (input.startsWith('<?xml') || input.startsWith('<opml')) {
+                    data = parseOPML(input);
+                } else {
+                    data = parseMarkdown(input);
+                }
+                renderMindmap(data);
             }
 
             generateBtn.addEventListener('click', generateMindmap);
