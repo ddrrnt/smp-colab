@@ -230,12 +230,12 @@
                 } else {
                     data = parseMarkdown(input);
                 }
-                renderMindmap(data);
+                                renderMindmap(data);
             }
 
             function applyColors() {
                 const nodes = document.querySelectorAll('.mindmap-node');
-                nodes.forEach((node, index) => {
+                nodes.forEach((node) => {
                     const depth = node.closest('.mindmap-column').dataset.depth || 0;
                     node.style.backgroundColor = colorSchemes[currentColorScheme][depth % colorSchemes[currentColorScheme].length];
                 });
@@ -243,18 +243,9 @@
 
             generateBtn.addEventListener('click', generateMindmap);
 
-            // Set default color scheme
-                            // Initial render
-                if (inputArea.value.trim() !== '') {
-                    generateMindmap();
-                }
-            }
-
-            generateBtn.addEventListener('click', generateMindmap);
+            // Initial render with default colors
+            applyColors();
         });
     </script>
 </body>
 </html>
-            
-            
-            
