@@ -236,8 +236,9 @@
             function generateMindmap() {
                 const input = inputArea.value.trim();
                 let data;
-                if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-                                        data = parseOPML(input);
+                if (input.startsWith('<?xml') ||
+                                    input.startsWith('<opml')) {
+                    data = parseOPML(input);
                 } else {
                     data = parseMarkdown(input);
                 }
