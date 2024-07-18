@@ -39,6 +39,9 @@
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         .mindmap-node:hover {
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -50,11 +53,13 @@
             margin: 0;
             font-size: 14px;
         }
-        .mindmap-column:first-child .mindmap-node {
-            height: 100%;
+        .mindmap-children {
+            display: none;
+            margin-top: 10px;
+        }
+        .mindmap-node.expanded > .mindmap-children {
             display: flex;
             flex-direction: column;
-            justify-content: center;
         }
         textarea {
             width: 100%;
@@ -143,56 +148,39 @@
 
         function renderMindmap(data) {
             mindmapContainer.innerHTML = '';
-            renderColumn(data, mindmapContainer, 0);
+            renderNode(data, mindmapContainer);
         }
 
-        function renderColumn(node, container, depth) {
-            if (depth >= 5) return; // Limit to 5 levels of depth
-
-            const column = document.createElement('div');
-            column.className = 'mindmap-column';
-            
-            const nodeElement = createNodeElement(node);
-            column.appendChild(nodeElement);
-            
-            if (node.children && node.children.length > 0) {
-                const childColumn = document.createElement('div');
-                childColumn.className = 'mindmap-column';
-                childColumn.style.display = 'none';
-                
-                node.children.forEach(child => {
-                    const childNode = createNodeElement(child);
-                    childColumn.appendChild(childNode);
-                });
-                
-                nodeElement.addEventListener('click', function() {
-                    const activeNodes = container.querySelectorAll('.mindmap-node.active');
-                    activeNodes.forEach(node => node.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Remove all columns to the right
-                    const existingColumns = container.querySelectorAll('.mindmap-column');
-                    for (let i = depth + 1; i < existingColumns.length; i++) {
-                        container.removeChild(existingColumns[i]);
-                    }
-                    
-                    childColumn.style.display = 'flex';
-                    container.appendChild(childColumn);
-                    
-                    if (node.children[0].children && node.children[0].children.length > 0) {
-                        renderColumn(node.children[0], container, depth + 1);
-                    }
-                });
-            }
-            
-            container.appendChild(column);
-        }
-
-        function createNodeElement(node) {
+        function renderNode(node, container) {
             const nodeElement = document.createElement('div');
             nodeElement.className = 'mindmap-node';
             nodeElement.innerHTML = `<h3>${node.title}</h3>`;
-            return nodeElement;
+
+            if (node.children && node.children.length > 0) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'mindmap-children';
+                node.children.forEach(child => {
+                    renderNode(child, childrenContainer);
+                });
+                nodeElement.appendChild(childrenContainer);
+
+                nodeElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('expanded');
+                    
+                    // Remove 'active' class from all siblings
+                    const siblings = this.parentNode.children;
+                    for (let i = 0; i < siblings.length; i++) {
+                        if (siblings[i] !== this) {
+                            siblings[i].classList.remove('active', 'expanded');
+                        }
+                    }
+                    
+                    this.classList.toggle('active');
+                });
+            }
+
+            container.appendChild(nodeElement);
         }
 
         function generateMindmap() {
