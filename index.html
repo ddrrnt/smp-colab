@@ -115,7 +115,7 @@
             const colorOptions = document.querySelectorAll('.color-options button');
             const embedBtn = document.getElementById('embed-btn');
             const embedCode = document.getElementById('embed-code');
-            let currentColorScheme = 'black';
+            let currentColorScheme = 'multi';
 
             const colorSchemes = {
                 black: ['#000000', '#333333', '#666666', '#999999', '#CCCCCC'],
@@ -237,9 +237,17 @@
                 const nodes = document.querySelectorAll('.mindmap-node');
                 nodes.forEach((node, index) => {
                     const depth = node.closest('.mindmap-column').dataset.depth || 0;
-                    node.style.backgroundColor = colorSchemes[currentColorScheme][depth % color
-                    orSchemes[currentColorScheme].length];
+                    node.style.backgroundColor = colorSchemes[currentColorScheme][depth % colorSchemes[currentColorScheme].length];
                 });
+            }
+
+            generateBtn.addEventListener('click', generateMindmap);
+
+            // Set default color scheme
+                            // Initial render
+                if (inputArea.value.trim() !== '') {
+                    generateMindmap();
+                }
             }
 
             generateBtn.addEventListener('click', generateMindmap);
@@ -247,3 +255,6 @@
     </script>
 </body>
 </html>
+            
+            
+            
