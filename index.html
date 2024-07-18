@@ -23,6 +23,7 @@
             display: flex;
             overflow-x: auto;
             padding: 20px 0;
+            min-height: 500px;
         }
         .mindmap-column {
             display: flex;
@@ -48,6 +49,12 @@
         .mindmap-node h3 {
             margin: 0;
             font-size: 14px;
+        }
+        .mindmap-column:first-child .mindmap-node {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         textarea {
             width: 100%;
@@ -136,10 +143,12 @@
 
         function renderMindmap(data) {
             mindmapContainer.innerHTML = '';
-            renderColumn(data, mindmapContainer);
+            renderColumn(data, mindmapContainer, 0);
         }
 
-        function renderColumn(node, container) {
+        function renderColumn(node, container, depth) {
+            if (depth >= 5) return; // Limit to 5 levels of depth
+
             const column = document.createElement('div');
             column.className = 'mindmap-column';
             
@@ -161,8 +170,9 @@
                     activeNodes.forEach(node => node.classList.remove('active'));
                     this.classList.add('active');
                     
+                    // Remove all columns to the right
                     const existingColumns = container.querySelectorAll('.mindmap-column');
-                    for (let i = 1; i < existingColumns.length; i++) {
+                    for (let i = depth + 1; i < existingColumns.length; i++) {
                         container.removeChild(existingColumns[i]);
                     }
                     
@@ -170,7 +180,7 @@
                     container.appendChild(childColumn);
                     
                     if (node.children[0].children && node.children[0].children.length > 0) {
-                        renderColumn(node.children[0], childColumn);
+                        renderColumn(node.children[0], container, depth + 1);
                     }
                 });
             }
