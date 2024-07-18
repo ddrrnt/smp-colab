@@ -30,6 +30,7 @@
             flex-direction: column;
             min-width: 200px;
             margin-right: 10px;
+            flex-grow: 1;
         }
         .mindmap-node {
             background-color: #FFB6C1;
@@ -39,6 +40,9 @@
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         .mindmap-node:hover {
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -138,7 +142,7 @@
         function renderMindmap(data) {
             mindmapContainer.innerHTML = '';
             const firstColumn = createColumn();
-            renderNodes(data, firstColumn);
+            renderNodes(data, firstColumn, 0);
             mindmapContainer.appendChild(firstColumn);
         }
 
@@ -148,7 +152,7 @@
             return column;
         }
 
-        function renderNodes(node, column) {
+        function renderNodes(node, column, depth) {
             const nodeElement = document.createElement('div');
             nodeElement.className = 'mindmap-node';
             nodeElement.innerHTML = `<h3>${node.title}</h3>`;
@@ -158,21 +162,32 @@
                 nodeElement.addEventListener('click', function(e) {
                     e.stopPropagation();
                     
-                    // Remove all columns to the right
-                    while (column.nextElementSibling) {
-                        mindmapContainer.removeChild(column.nextElementSibling);
+                    // Toggle active class
+                    this.classList.toggle('active');
+                    
+                    // Get or create next column
+                    let nextColumn = column.nextElementSibling;
+                    if (!nextColumn || nextColumn.dataset.depth != depth + 1) {
+                        nextColumn = createColumn();
+                        nextColumn.dataset.depth = depth + 1;
+                        mindmapContainer.insertBefore(nextColumn, column.nextElementSibling);
                     }
                     
-                    // Remove active class from all nodes in this column
-                    column.querySelectorAll('.mindmap-node').forEach(node => node.classList.remove('active'));
+                    // Clear next column
+                    nextColumn.innerHTML = '';
                     
-                    // Add active class to clicked node
-                    this.classList.add('active');
+                    // If active, render children
+                    if (this.classList.contains('active')) {
+                        node.children.forEach(child => renderNodes(child, nextColumn, depth + 1));
+                    }
                     
-                    // Create new column for children
-                    const childColumn = createColumn();
-                    node.children.forEach(child => renderNodes(child, childColumn));
-                    mindmapContainer.appendChild(childColumn);
+                    // Remove all columns after next column
+                    let columnToRemove = nextColumn.nextElementSibling;
+                    while (columnToRemove) {
+                        const nextColumnToRemove = columnToRemove.nextElementSibling;
+                        mindmapContainer.removeChild(columnToRemove);
+                        columnToRemove = nextColumnToRemove;
+                    }
                 });
             }
         }
