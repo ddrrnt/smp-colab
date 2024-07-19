@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentColorScheme = 'multi';
 
     const colorSchemes = {
-        black: ['#000000', '#FFFFFF', '#FFFFFF', '#808080', '#D3D3D3'],
+        black: ['#000000', '#FFFFFF', '#808080', '#D3D3D3', '#F5F5F5'],
         yellow: ['#FFDD00', '#FFCC00', '#FFBB00', '#FFAA00', '#FF9900'],
         blue: ['#00008B', '#1E90FF', '#87CEFA', '#ADD8E6', '#B0E0E6'],
         red: ['#8B0000', '#FF4500', '#FF6347', '#FFA07A', '#FFB6C1'],
