@@ -1,13 +1,4 @@
-function compressOPML() {
-       console.log("compressOPML function called");
-       const opmlString = inputArea.value.trim();
-       console.log("OPML string:", opmlString);
-       const compressedOPML = btoa(encodeURIComponent(opmlString));
-       console.log("Compressed OPML:", compressedOPML);
-       compressedData.value = compressedOPML;
-       compressionSection.style.display = 'block';
-       console.log("Compression section should now be visible");
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const inputArea = document.getElementById('input-area');
     const generateBtn = document.getElementById('generate-btn');
     const compressBtn = document.getElementById('compress-btn');
@@ -105,10 +96,14 @@ function compressOPML() {
     }
 
     function compressOPML() {
+        console.log("compressOPML function called");
         const opmlString = inputArea.value.trim();
+        console.log("OPML string:", opmlString);
         const compressedOPML = btoa(encodeURIComponent(opmlString));
+        console.log("Compressed OPML:", compressedOPML);
         compressedData.value = compressedOPML;
         compressionSection.style.display = 'block';
+        console.log("Compression section should now be visible");
     }
 
     function generateEmbedCode() {
@@ -119,7 +114,7 @@ function compressOPML() {
         }
         
         const encodedUrl = encodeURIComponent(gistUrl);
-        const embedUrl = `${window.location.origin}/embed.html?gist=${encodedUrl}`;
+        const embedUrl = `https://ddrrnt.github.io/smp-colab/embed.html?gist=${encodedUrl}`;
         embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
         embedCode.style.display = 'block';
     }
