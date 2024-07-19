@@ -1,4 +1,13 @@
-document.addEventListener('DOMContentLoaded', function() {
+function compressOPML() {
+       console.log("compressOPML function called");
+       const opmlString = inputArea.value.trim();
+       console.log("OPML string:", opmlString);
+       const compressedOPML = btoa(encodeURIComponent(opmlString));
+       console.log("Compressed OPML:", compressedOPML);
+       compressedData.value = compressedOPML;
+       compressionSection.style.display = 'block';
+       console.log("Compression section should now be visible");
+    document.addEventListener('DOMContentLoaded', function() {
     const inputArea = document.getElementById('input-area');
     const generateBtn = document.getElementById('generate-btn');
     const compressBtn = document.getElementById('compress-btn');
