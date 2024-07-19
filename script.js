@@ -3,44 +3,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const generateBtn = document.getElementById('generate-btn');
     const compressBtn = document.getElementById('compress-btn');
     const mindmapContainer = document.getElementById('mindmap-container');
-    const embedBtn = document.getElementById('embed-btn');
-    const embedCode = document.getElementById('embed-code');
+    const compressionSection = document.getElementById('compression-section');
     const compressedData = document.getElementById('compressed-data');
-    const gistInstructions = document.getElementById('gist-instructions');
+    const embedBtn = document.getElementById('embed-btn');
     const gistUrlInput = document.getElementById('gist-url-input');
-    
+    const embedCode = document.getElementById('embed-code');
+
     const colorScheme = ['#FFA500', '#90EE90', '#ADD8E6', '#FFFFE0'];
     let lastClickedNode = null;
 
     generateBtn.addEventListener('click', generateMindmap);
-    compressBtn.addEventListener('click', generateCompressedOPML);
+    compressBtn.addEventListener('click', compressOPML);
     embedBtn.addEventListener('click', generateEmbedCode);
 
-    function compressOPML(opmlString) {
-        return btoa(encodeURIComponent(opmlString.trim()));
-    }
-
-    function generateCompressedOPML() {
-        const opmlString = inputArea.value.trim();
-        const compressedOPML = compressOPML(opmlString);
-        
-        compressedData.value = compressedOPML;
-        compressedData.style.display = 'block';
-        
-        gistInstructions.style.display = 'block';
-    }
-
-    function generateEmbedCode() {
-        const gistUrl = gistUrlInput.value.trim();
-        if (!gistUrl) {
-            alert('Please enter the Gist URL');
-            return;
+    function generateMindmap() {
+        const input = inputArea.value.trim();
+        if (input.startsWith('<?xml') || input.startsWith('<opml')) {
+            const data = parseOPML(input);
+            renderMindmap(data);
+        } else {
+            alert('Please provide valid OPML input.');
         }
-        
-        const encodedUrl = encodeURIComponent(gistUrl);
-        const embedUrl = `${window.location.origin}/embed.html?gist=${encodedUrl}`;
-        embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
-        embedCode.style.display = 'block';
     }
 
     function parseOPML(opmlString) {
@@ -112,13 +95,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function generateMindmap() {
-        const input = inputArea.value.trim();
-        if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-            const data = parseOPML(input);
-            renderMindmap(data);
-        } else {
-            alert('Please provide valid OPML input.');
+    function compressOPML() {
+        const opmlString = inputArea.value.trim();
+        const compressedOPML = btoa(encodeURIComponent(opmlString));
+        compressedData.value = compressedOPML;
+        compressionSection.style.display = 'block';
+    }
+
+    function generateEmbedCode() {
+        const gistUrl = gistUrlInput.value.trim();
+        if (!gistUrl) {
+            alert('Please enter the Gist URL');
+            return;
         }
+        
+        const encodedUrl = encodeURIComponent(gistUrl);
+        const embedUrl = `${window.location.origin}/embed.html?gist=${encodedUrl}`;
+        embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
+        embedCode.style.display = 'block';
     }
 });
