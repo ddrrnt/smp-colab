@@ -1,20 +1,31 @@
-<div class="container">
-    <h1>Horizontal Expanding Mindmap</h1>
-    <textarea id="input-area" placeholder="Paste your OPML code here..."></textarea>
-    <button id="generate-btn">Generate Mindmap</button>
-    <button id="compress-btn">Compress OPML</button>
-    <div id="mindmap-container"></div>
-    <textarea id="compressed-data" readonly style="display: none;"></textarea>
-    <div id="gist-instructions" style="display: none;">
-        <p>1. Copy the compressed data above</p>
-        <p>2. Create a new Gist at <a href="https://gist.github.com/" target="_blank">https://gist.github.com/</a></p>
-        <p>3. Paste the compressed data into the Gist</p>
-        <p>4. Click 'Create secret gist'</p>
-        <p>5. Copy the URL of the raw file (click 'Raw' button)</p>
-        <p>6. Paste the URL below:</p>
-    </div>
-    <input type="text" id="gist-url-input" placeholder="Paste Gist URL here">
-    <button id="embed-btn">Generate Embed Code</button>
-    <textarea id="embed-code" readonly style="display: none;"></textarea>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Expanding Mindmap</title>
     <link rel="stylesheet" href="styles.css">
-</div>
+</head>
+<body>
+    <div class="container">
+        <h1>Horizontal Expanding Mindmap</h1>
+        <textarea id="input-area" placeholder="Paste your OPML code here..."></textarea>
+        <button id="generate-btn">Generate Mindmap</button>
+        <button id="compress-btn">Compress OPML</button>
+        <div id="mindmap-container"></div>
+        <textarea id="compressed-data" readonly style="display: none;"></textarea>
+        <div id="gist-instructions" style="display: none;">
+            <p>1. Copy the compressed data above</p>
+            <p>2. Create a new Gist at <a href="https://gist.github.com/" target="_blank">https://gist.github.com/</a></p>
+            <p>3. Paste the compressed data into the Gist</p>
+            <p>4. Click 'Create secret gist'</p>
+            <p>5. Copy the URL of the raw file (click 'Raw' button)</p>
+            <p>6. Paste the URL below:</p>
+        </div>
+        <input type="text" id="gist-url-input" placeholder="Paste Gist URL here">
+        <button id="embed-btn">Generate Embed Code</button>
+        <textarea id="embed-code" readonly style="display: none;"></textarea>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
