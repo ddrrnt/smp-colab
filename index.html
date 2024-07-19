@@ -4,90 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horizontal Expanding Mindmap</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        #opml-input {
-            width: 100%;
-            height: 200px;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        #generate-btn, #generate-embed-btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #generate-btn:hover, #generate-embed-btn:hover {
-            background-color: #45a049;
-        }
-        #mindmap-container {
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 4px;
-            min-height: 400px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        #embed-section {
-            display: none;
-            margin-top: 20px;
-        }
-        #embed-code {
-            width: 100%;
-            height: 100px;
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <h1>Horizontal Expanding Mindmap</h1>
-        <textarea id="opml-input" placeholder="Paste your OPML here..."></textarea>
+        <textarea id="input-area" placeholder="Paste your OPML code here..."></textarea>
         <button id="generate-btn">Generate Mindmap</button>
         <div id="mindmap-container"></div>
-        <div id="embed-section">
-            <h2>Embed Code</h2>
-            <button id="generate-embed-btn">Generate Embed Code</button>
+        <div class="embed-section" id="embed-section" style="display: none;">
+            <button id="embed-btn">Get Embed Code</button>
             <textarea id="embed-code" readonly></textarea>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-base64/3.7.2/base64.min.js"></script>
-    <script>
-        // ... [Include all JavaScript from the previous version here] ...
-
-        function generateEmbedCode() {
-            const opmlInput = document.getElementById('opml-input').value;
-            const encodedOPML = Base64.encode(opmlInput);
-            const embedCode = `<iframe src="embed.html?opml=${encodedOPML}" width="100%" height="500" frameborder="0"></iframe>`;
-            document.getElementById('embed-code').value = embedCode;
-        }
-
-        // ... [Rest of the JavaScript code] ...
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
