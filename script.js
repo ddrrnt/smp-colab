@@ -1,113 +1,33 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const inputArea = document.getElementById('input-area');
-    const generateBtn = document.getElementById('generate-btn');
-    const mindmapContainer = document.getElementById('mindmap-container');
-    const embedSection = document.getElementById('embed-section');
-    const embedBtn = document.getElementById('embed-btn');
-    const embedCode = document.getElementById('embed-code');
+// ... (keep existing code)
+
+function compressOPML(opmlString) {
+    return btoa(encodeURIComponent(opmlString.trim()));
+}
+
+function generateCompressedOPML() {
+    const opmlString = inputArea.value.trim();
+    const compressedOPML = compressOPML(opmlString);
     
-    const colorScheme = ['#FFA500', '#90EE90', '#ADD8E6', '#FFFFE0'];
-    let lastClickedNode = null;
+    const compressedDataArea = document.getElementById('compressed-data');
+    compressedDataArea.value = compressedOPML;
+    compressedDataArea.style.display = 'block';
+    
+    document.getElementById('gist-instructions').style.display = 'block';
+}
 
-    generateBtn.addEventListener('click', generateMindmap);
-    embedBtn.addEventListener('click', generateEmbedCode);
-
-    function compressString(string) {
-        const compress = (string) => {
-            return string.replace(/\s+/g, ' ')
-                         .replace(/<outline/g, '<o')
-                         .replace(/<\/outline>/g, '</o>')
-                         .replace(/text="/g, 't="');
-        };
-        return compress(string);
+function generateEmbedCode() {
+    const gistUrl = document.getElementById('gist-url-input').value.trim();
+    if (!gistUrl) {
+        alert('Please enter the Gist URL');
+        return;
     }
+    
+    const encodedUrl = encodeURIComponent(gistUrl);
+    const embedUrl = `${window.location.origin}/embed.html?gist=${encodedUrl}`;
+    embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
+    embedCode.style.display = 'block';
+}
 
-    function generateEmbedCode() {
-        const opmlString = inputArea.value.trim();
-        const compressedOPML = compressString(opmlString);
-        const encodedOPML = btoa(encodeURIComponent(compressedOPML));
-        const embedUrl = `${window.location.origin}/embed.html?d=${encodedOPML}`;
-        embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
-        embedCode.style.display = 'block';
-    }
-
-    function parseOPML(opmlString) {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(opmlString, "text/xml");
-        function parseOutline(outlineElement) {
-            const result = {
-                title: outlineElement.getAttribute('text'),
-                children: []
-            };
-            const childOutlines = outlineElement.children;
-            for (let i = 0; i < childOutlines.length; i++) {
-                if (childOutlines[i].tagName === 'outline') {
-                    result.children.push(parseOutline(childOutlines[i]));
-                }
-            }
-            return result;
-        }
-        const rootOutline = xmlDoc.getElementsByTagName('outline')[0];
-        return parseOutline(rootOutline);
-    }
-
-    function renderMindmap(data) {
-        mindmapContainer.innerHTML = '';
-        const firstColumn = createColumn();
-        renderNodes(data, firstColumn, 0);
-        mindmapContainer.appendChild(firstColumn);
-        embedSection.style.display = 'block';
-    }
-
-    function createColumn() {
-        const column = document.createElement('div');
-        column.className = 'mindmap-column';
-        return column;
-    }
-
-    function renderNodes(node, column, depth) {
-        const nodeElement = document.createElement('div');
-        nodeElement.className = 'mindmap-node';
-        nodeElement.innerHTML = `<h3>${node.title}</h3>`;
-        nodeElement.style.backgroundColor = colorScheme[depth % colorScheme.length];
-        column.appendChild(nodeElement);
-        if (node.children && node.children.length > 0) {
-            nodeElement.addEventListener('click', function(e) {
-                e.stopPropagation();
-                this.classList.toggle('active');
-                if (lastClickedNode) {
-                    lastClickedNode.classList.remove('clicked');
-                }
-                this.classList.add('clicked');
-                lastClickedNode = this;
-
-                let nextColumn = column.nextElementSibling;
-                if (!nextColumn || nextColumn.dataset.depth != depth + 1) {
-                    nextColumn = createColumn();
-                    nextColumn.dataset.depth = depth + 1;
-                    mindmapContainer.insertBefore(nextColumn, column.nextElementSibling);
-                }
-                nextColumn.innerHTML = '';
-                if (this.classList.contains('active')) {
-                    node.children.forEach(child => renderNodes(child, nextColumn, depth + 1));
-                }
-                let columnToRemove = nextColumn.nextElementSibling;
-                while (columnToRemove) {
-                    const nextColumnToRemove = columnToRemove.nextElementSibling;
-                    mindmapContainer.removeChild(columnToRemove);
-                    columnToRemove = nextColumnToRemove;
-                }
-            });
-        }
-    }
-
-    function generateMindmap() {
-        const input = inputArea.value.trim();
-        if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-            const data = parseOPML(input);
-            renderMindmap(data);
-        } else {
-            alert('Please provide valid OPML input.');
-        }
-    }
-});
+// Update event listeners
+document.getElementById('compress-btn').addEventListener('click', generateCompressedOPML);
+embedBtn.addEventListener('click', generateEmbedCode);
