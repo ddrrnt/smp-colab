@@ -1,25 +1,105 @@
-<script>
-    // Add this function to decompress the OPML string
-    function decompressString(string) {
-        const decompress = (string) => {
-            return string.replace(/<o/g, '<outline')
-                         .replace(/<\/o>/g, '</outline>')
-                         .replace(/t="/g, 'text="');
-        };
-        return decompress(string);
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedded Mindmap</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="mindmap-container"></div>
+    <script>
+        const colorScheme = ['#FFA500', '#90EE90', '#ADD8E6', '#FFFFE0'];
+        let lastClickedNode = null;
 
-    // Update the loadMindmap function
-    function loadMindmap() {
-        const params = new URLSearchParams(window.location.search);
-        const encodedOPML = params.get('d');
-        if (encodedOPML) {
-            const compressedOPML = decodeURIComponent(atob(encodedOPML));
-            const opmlString = decompressString(compressedOPML);
-            const data = parseOPML(opmlString);
-            renderMindmap(document.getElementById('mindmap-container'), data);
+        async function loadMindmap() {
+            const params = new URLSearchParams(window.location.search);
+            const gistUrl = params.get('gist');
+            if (gistUrl) {
+                try {
+                    const response = await fetch(gistUrl);
+                    const compressedOPML = await response.text();
+                    const opmlString = decodeURIComponent(atob(compressedOPML));
+                    const data = parseOPML(opmlString);
+                    renderMindmap(data);
+                } catch (error) {
+                    console.error('Error loading mindmap:', error);
+                    document.getElementById('mindmap-container').innerHTML = 'Error loading mindmap. Please try again.';
+                }
+            }
         }
-    }
 
-    // The rest of your embed.html script remains the same
-</script>
+        function parseOPML(opmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(opmlString, "text/xml");
+            function parseOutline(outlineElement) {
+                const result = {
+                    title: outlineElement.getAttribute('text'),
+                    children: []
+                };
+                const childOutlines = outlineElement.children;
+                for (let i = 0; i < childOutlines.length; i++) {
+                    if (childOutlines[i].tagName === 'outline') {
+                        result.children.push(parseOutline(childOutlines[i]));
+                    }
+                }
+                return result;
+            }
+            const rootOutline = xmlDoc.getElementsByTagName('outline')[0];
+            return parseOutline(rootOutline);
+        }
+
+        function renderMindmap(data) {
+            const mindmapContainer = document.getElementById('mindmap-container');
+            mindmapContainer.innerHTML = '';
+            const firstColumn = createColumn();
+            renderNodes(data, firstColumn, 0);
+            mindmapContainer.appendChild(firstColumn);
+        }
+
+        function createColumn() {
+            const column = document.createElement('div');
+            column.className = 'mindmap-column';
+            return column;
+        }
+
+        function renderNodes(node, column, depth) {
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'mindmap-node';
+            nodeElement.innerHTML = `<h3>${node.title}</h3>`;
+            nodeElement.style.backgroundColor = colorScheme[depth % colorScheme.length];
+            column.appendChild(nodeElement);
+            if (node.children && node.children.length > 0) {
+                nodeElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                    if (lastClickedNode) {
+                        lastClickedNode.classList.remove('clicked');
+                    }
+                    this.classList.add('clicked');
+                    lastClickedNode = this;
+
+                    let nextColumn = column.nextElementSibling;
+                    if (!nextColumn || nextColumn.dataset.depth != depth + 1) {
+                        nextColumn = createColumn();
+                        nextColumn.dataset.depth = depth + 1;
+                        mindmapContainer.insertBefore(nextColumn, column.nextElementSibling);
+                    }
+                    nextColumn.innerHTML = '';
+                    if (this.classList.contains('active')) {
+                        node.children.forEach(child => renderNodes(child, nextColumn, depth + 1));
+                    }
+                    let columnToRemove = nextColumn.nextElementSibling;
+                    while (columnToRemove) {
+                        const nextColumnToRemove = columnToRemove.nextElementSibling;
+                        mindmapContainer.removeChild(columnToRemove);
+                        columnToRemove = nextColumnToRemove;
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('load', loadMindmap);
+    </script>
+</body>
+</html>
