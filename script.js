@@ -106,16 +106,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Compression section should now be visible");
     }
 
-    function generateEmbedCode() {
-        const gistUrl = gistUrlInput.value.trim();
-        if (!gistUrl) {
-            alert('Please enter the Gist URL');
-            return;
-        }
-        
-        const encodedUrl = encodeURIComponent(gistUrl);
-        const embedUrl = `https://ddrrnt.github.io/smp-colab/embed.html?gist=${encodedUrl}`;
-        embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
-        embedCode.style.display = 'block';
+   function generateEmbedCode() {
+    const gistUrl = gistUrlInput.value.trim();
+    if (!gistUrl) {
+        alert('Please enter the Gist URL');
+        return;
     }
+    
+    console.log('Gist URL:', gistUrl); // New log
+    const encodedUrl = encodeURIComponent(gistUrl);
+    const embedUrl = `https://ddrrnt.github.io/smp-colab/embed.html?gist=${encodedUrl}`;
+    console.log('Embed URL:', embedUrl); // New log
+    embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
+    embedCode.style.display = 'block';
+}
 });
