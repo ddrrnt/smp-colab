@@ -12,6 +12,25 @@ document.addEventListener('DOMContentLoaded', function() {
     generateBtn.addEventListener('click', generateMindmap);
     embedBtn.addEventListener('click', generateEmbedCode);
 
+    function compressString(string) {
+        const compress = (string) => {
+            return string.replace(/\s+/g, ' ')
+                         .replace(/<outline/g, '<o')
+                         .replace(/<\/outline>/g, '</o>')
+                         .replace(/text="/g, 't="');
+        };
+        return compress(string);
+    }
+
+    function generateEmbedCode() {
+        const opmlString = inputArea.value.trim();
+        const compressedOPML = compressString(opmlString);
+        const encodedOPML = btoa(encodeURIComponent(compressedOPML));
+        const embedUrl = `${window.location.origin}/embed.html?d=${encodedOPML}`;
+        embedCode.value = `<iframe src="${embedUrl}" width="100%" height="500" frameborder="0"></iframe>`;
+        embedCode.style.display = 'block';
+    }
+
     function parseOPML(opmlString) {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(opmlString, "text/xml");
@@ -90,14 +109,5 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             alert('Please provide valid OPML input.');
         }
-    }
-
-    function generateEmbedCode() {
-        const input = inputArea.value.trim();
-        const encodedOPML = btoa(encodeURIComponent(input));
-        const embedUrl = `embed.html?opml=${encodedOPML}`;
-        const iframeCode = `<iframe src="${embedUrl}" width="600" height="400" style="border:none;"></iframe>`;
-        embedCode.value = iframeCode;
-        embedCode.style.display = 'block';
     }
 });
