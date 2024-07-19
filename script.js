@@ -25,20 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     embedBtn.addEventListener('click', () => {
         const input = inputArea.value.trim();
-        fetch('/store', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ data: input })
-        })
-        .then(response => response.json())
-        .then(result => {
-            const embedUrl = `embed.html?key=${result.key}&color=${encodeURIComponent(currentColorScheme)}`;
-            const iframeCode = `<iframe src="${embedUrl}" width="600" height="400" style="border:none;"></iframe>`;
-            embedCode.value = iframeCode;
-            embedCode.style.display = 'block';
-        });
+        const embedUrl = `embed.html?data=${encodeURIComponent(input)}&color=${encodeURIComponent(currentColorScheme)}`;
+        const iframeCode = `<iframe src="${embedUrl}" width="600" height="400" style="border:none;"></iframe>`;
+        embedCode.value = iframeCode;
+        embedCode.style.display = 'block';
     });
 
     function parseOPML(opmlString) {
@@ -109,20 +99,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const nodes = document.querySelectorAll('.mindmap-node');
         nodes.forEach((node) => {
             const depth = node.closest('.mindmap-column').dataset.depth || 0;
-            node.style.backgroundColor = colorSchemes[currentColorScheme][depth % colorSchemes[currentColorScheme].length];
+            const bgColor = colorSchemes[currentColorScheme][depth % colorSchemes[currentColorScheme].length];
+            node.style.backgroundColor = bgColor;
+
+            if (currentColorScheme === 'black') {
+                if (depth === 0) {
+                    node.style.color = '#FFFFFF';
+                } else if (depth === 1) {
+                    node.style.color = '#FFFFFF';
+                } else if (depth === 2) {
+                    node.style.backgroundColor = '#808080';
+                } else if (depth === 3) {
+                    node.style.backgroundColor = '#D3D3D3';
+                }
+            }
         });
     }
 
     function generateMindmap() {
         const input = inputArea.value.trim();
-        let data;
         if (input.startsWith('<?xml') || input.startsWith('<opml')) {
-            data = parseOPML(input);
+            const data = parseOPML(input);
+            renderMindmap(data);
         } else {
             alert('Please provide valid OPML input.');
-            return;
         }
-        renderMindmap(data);
     }
 
     generateBtn.addEventListener('click', generateMindmap);
