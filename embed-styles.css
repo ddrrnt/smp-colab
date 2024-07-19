@@ -1,0 +1,45 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+#mindmap-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.mindmap-node {
+    margin-left: 20px;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+.mindmap-node-content {
+    display: flex;
+    align-items: center;
+}
+
+.mindmap-toggle {
+    margin-right: 5px;
+    transition: transform 0.3s;
+}
+
+.mindmap-toggle.expanded {
+    transform: rotate(90deg);
+}
+
+.mindmap-children {
+    display: none;
+    margin-left: 20px;
+}
+
+.mindmap-children.expanded {
+    display: block;
+}
