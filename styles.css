@@ -78,17 +78,17 @@ button:hover {
     background-color: #45a049;
 }
 
-.color-options, .embed-section {
-    margin-bottom: 10px;
-}
-
-.color-options button, .embed-section button {
-    margin-right: 5px;
+.embed-section {
+    margin-top: 20px;
 }
 
 #embed-code {
     width: 100%;
     height: 100px;
     margin-top: 10px;
-    display: none;
+}
+
+/* Additional styles for clicked nodes */
+.mindmap-node.clicked {
+    filter: brightness(0.85);
 }
