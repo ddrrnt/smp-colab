@@ -1,3 +1,33 @@
+<script>
+    async function loadMindmap() {
+        const params = new URLSearchParams(window.location.search);
+        const gistUrl = params.get('gist');
+        if (gistUrl) {
+            try {
+                console.log('Fetching from Gist URL:', gistUrl);
+                const response = await fetch(gistUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const compressedOPML = await response.text();
+                console.log('Compressed OPML:', compressedOPML);
+                const opmlString = decodeURIComponent(atob(compressedOPML));
+                console.log('Decompressed OPML:', opmlString);
+                const data = parseOPML(opmlString);
+                console.log('Parsed data:', data);
+                renderMindmap(data);
+            } catch (error) {
+                console.error('Error loading mindmap:', error);
+                document.getElementById('mindmap-container').innerHTML = `Error loading mindmap: ${error.message}. Please try again.`;
+            }
+        } else {
+            console.error('No Gist URL provided');
+            document.getElementById('mindmap-container').innerHTML = 'Error: No Gist URL provided.';
+        }
+    }
+
+    // ... rest of the embed.html code ...
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
