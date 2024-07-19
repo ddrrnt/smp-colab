@@ -1,134 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedded Mindmap</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        #mindmap-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .mindmap-node {
-            margin-left: 20px;
-            padding: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 5px;
-        }
-        .mindmap-node-content {
-            display: flex;
-            align-items: center;
-        }
-        .mindmap-toggle {
-            margin-right: 5px;
-            transition: transform 0.3s;
-        }
-        .mindmap-toggle.expanded {
-            transform: rotate(90deg);
-        }
-        .mindmap-children {
-            display: none;
-            margin-left: 20px;
-        }
-        .mindmap-children.expanded {
-            display: block;
-        }
-    </style>
-</head>
-<body>
-    <div id="mindmap-container"></div>
-    <script>
-        // Base64 decoding function
-        function base64Decode(str) {
-            return decodeURIComponent(atob(str).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-        }
+<script>
+    // Add this function to decompress the OPML string
+    function decompressString(string) {
+        const decompress = (string) => {
+            return string.replace(/<o/g, '<outline')
+                         .replace(/<\/o>/g, '</outline>')
+                         .replace(/t="/g, 'text="');
+        };
+        return decompress(string);
+    }
 
-        function parseOPML(opmlString) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(opmlString, "text/xml");
-            function parseOutline(outlineElement) {
-                const result = {
-                    text: outlineElement.getAttribute('text'),
-                    children: []
-                };
-                const childOutlines = outlineElement.children;
-                for (let i = 0; i < childOutlines.length; i++) {
-                    if (childOutlines[i].tagName === 'outline') {
-                        result.children.push(parseOutline(childOutlines[i]));
-                    }
-                }
-                return result;
-            }
-            const rootOutline = xmlDoc.getElementsByTagName('outline')[0];
-            return parseOutline(rootOutline);
+    // Update the loadMindmap function
+    function loadMindmap() {
+        const params = new URLSearchParams(window.location.search);
+        const encodedOPML = params.get('d');
+        if (encodedOPML) {
+            const compressedOPML = decodeURIComponent(atob(encodedOPML));
+            const opmlString = decompressString(compressedOPML);
+            const data = parseOPML(opmlString);
+            renderMindmap(document.getElementById('mindmap-container'), data);
         }
+    }
 
-        function renderMindmap(container, data) {
-            container.innerHTML = '';
-            container.appendChild(createNodeElement(data));
-        }
-
-        function createNodeElement(node) {
-            const nodeElement = document.createElement('div');
-            nodeElement.className = 'mindmap-node';
-
-            const nodeContent = document.createElement('div');
-            nodeContent.className = 'mindmap-node-content';
-
-            if (node.children.length > 0) {
-                const toggle = document.createElement('span');
-                toggle.className = 'mindmap-toggle';
-                toggle.textContent = '▶';
-                nodeContent.appendChild(toggle);
-            }
-
-            const text = document.createElement('span');
-            text.textContent = node.text;
-            nodeContent.appendChild(text);
-
-            nodeElement.appendChild(nodeContent);
-
-            if (node.children.length > 0) {
-                const childrenContainer = document.createElement('div');
-                childrenContainer.className = 'mindmap-children';
-                node.children.forEach(child => {
-                    childrenContainer.appendChild(createNodeElement(child));
-                });
-                nodeElement.appendChild(childrenContainer);
-
-                nodeElement.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    childrenContainer.classList.toggle('expanded');
-                    nodeContent.querySelector('.mindmap-toggle').classList.toggle('expanded');
-                });
-            }
-
-            return nodeElement;
-        }
-
-        function loadMindmap() {
-            const params = new URLSearchParams(window.location.search);
-            const encodedOPML = params.get('opml');
-            if (encodedOPML) {
-                const opmlString = base64Decode(encodedOPML);
-                const data = parseOPML(opmlString);
-                renderMindmap(document.getElementById('mindmap-container'), data);
-            }
-        }
-
-        window.addEventListener('load', loadMindmap);
-    </script>
-</body>
-</html>
+    // The rest of your embed.html script remains the same
+</script>
